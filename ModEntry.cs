@@ -118,12 +118,12 @@ namespace AnimalObserver
 			if (!m_Registered)
 			{
 				m_Registered = true;
-				Helper.Events.Display.RenderingHud += OnRenderingHud;
+				Helper.Events.Display.RenderedWorld += OnRenderingHud;
 			}
             else
             {
 				m_Registered = false;
-				Helper.Events.Display.RenderingHud -= OnRenderingHud;
+				Helper.Events.Display.RenderedWorld -= OnRenderingHud;
 			}
 		}
 
@@ -141,7 +141,7 @@ namespace AnimalObserver
 				{
 					if (!farmAnimal.wasPet)
 					{
-						ShowEntity(farmAnimal, farmAnimal.home);
+						DrawEntity(farmAnimal, farmAnimal.home);
 					}
 				}
 			}
@@ -151,48 +151,43 @@ namespace AnimalObserver
 				Pet pet = GetPet(currentLocation);
 				if (pet != null && !pet.lastPetDay.Values.Any(x => x == Game1.Date.TotalDays))
 				{
-					ShowEntity(pet);
+					DrawEntity(pet);
 				}
 			}
 		}
-		
 
-		private void ShowEntity(Character animal, Building home = null)
+
+		private void DrawEntity(Character animal, Building home = null)
 		{
-			float factor = (float)(4.0 * Math.Round(Math.Sin(DateTime.Now.TimeOfDay.TotalMilliseconds / 250.0), 2)) - 32f;
-			
+			float factor = 4f * (float)Math.Round(Math.Sin(Game1.currentGameTime.TotalGameTime.TotalMilliseconds / 250.0), 2);
+
 			Vector2 offsetForAnimal = GetOffsetForAnimal(home);
 
-			if (animal != null)
-			{
-				DrawEntity(Config.Bubble, animal, factor, offsetForAnimal);
-
-
-				float num = 1f / (factor + 36.001f);
-				num = num <= 1f ? num : 1f;
-
-				DrawEntity(Config.Heart, animal, factor, offsetForAnimal, num);
-			}
+			DrawEntity(Config.Bubble, animal, factor, offsetForAnimal);
+			DrawEntity(Config.Heart, animal, factor, offsetForAnimal);
 		}
 
-
-
-		private void DrawEntity(EntitiesConfig config, Character animal, float factor, Vector2 offset, float colorFactor = 1f)
+		private void DrawEntity(EntitiesConfig config, Character animal, float factor, Vector2 offset)
 		{
-			offset += config.Offset + animal.Position;
+			offset += animal.position;
+			offset += config.Offset;
+			offset += new Vector2(animal.Sprite.getWidth() / 2, factor);
 
+			DrawSprite(config, Game1.GlobalToLocal(Game1.uiViewport, offset));
+		}
+
+		private void DrawSprite(EntitiesConfig config, Vector2 position)
+        {
 			Game1.spriteBatch.Draw(
-				Game1.mouseCursors, 
-				Game1.GlobalToLocal(Game1.viewport, new Vector2(animal.Sprite.getWidth() / 2 + offset.X, offset.Y + factor)),
-				GetRect(config),
-				config.Color * colorFactor, 
-				config.Rotation, 
-				config.Origin, 
+				Game1.mouseCursors,
+				position,
+				new Rectangle(config.X, config.Y, config.Width, config.Height),
+				config.Color,
+				config.Rotation,
+				config.Origin,
 				config.Scale,
 				config.SpriteEffects,
 				0f);
 		}
-
-		public static Rectangle? GetRect(EntitiesConfig config) => new Rectangle(config.X, config.Y, config.Width, config.Height);
 	}
 }
