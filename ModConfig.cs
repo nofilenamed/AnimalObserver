@@ -16,7 +16,7 @@ namespace AnimalObserver
             Y = 465,
             Width = 20,
             Height = 24,
-            Scale = 4f,
+            Scale = 2f,
             Color = Color.White * 0.65f
         };
 
@@ -26,8 +26,8 @@ namespace AnimalObserver
             Y = 514,
             Width = 9,
             Height = 10,
-            Offset = new Vector2(17f, 17f),
-            Scale = 5f,
+            Offset = new Vector2(7f, 7f),
+            Scale = 3f,
         };
 
         public Offset Offsets { get; set; } = new Offset();        
@@ -35,11 +35,11 @@ namespace AnimalObserver
 
     internal class Offset
     {
-        public Vector2 BarnAnimal { get; set; } = new Vector2(15f, -67f);
+        public Vector2 BarnAnimal { get; set; } = new Vector2(32f, -64f);
 
-        public Vector2 CoopAnimal { get; set; } = new Vector2(-6f, -88f);
+        public Vector2 CoopAnimal { get; set; } = new Vector2(0f, -64f);
 
-        public Vector2 Pet { get; set; } = new Vector2(22f, -120f);
+        public Vector2 Pet { get; set; } = new Vector2(32f, -64f);
     }
 
 
