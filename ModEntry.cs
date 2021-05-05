@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -6,6 +7,7 @@ using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Characters;
 using StardewValley.Network;
+using StardewValley.Tools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +19,8 @@ namespace AnimalObserver
 		private bool m_Registered;
 
 		private ModConfig Config;
+
+		private EntitiesSetting Entities;
 
 
 		public override void Entry(IModHelper helper)
@@ -31,6 +35,8 @@ namespace AnimalObserver
         private void LoadConfig()
         {
 			Config = Helper.ReadConfig<ModConfig>();
+
+			Entities = Config.Entities;
 		}
 
 		private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
@@ -118,30 +124,84 @@ namespace AnimalObserver
 			if (!m_Registered)
 			{
 				m_Registered = true;
-				Helper.Events.Display.RenderedWorld += OnRenderingHud;
+				Helper.Events.Display.RenderedWorld += OnRenderedWorld;
+
 			}
             else
             {
 				m_Registered = false;
-				Helper.Events.Display.RenderedWorld -= OnRenderingHud;
+				Helper.Events.Display.RenderedWorld -= OnRenderedWorld;
 			}
 		}
 
+		private double m_ShowProductTimeout;
+		private double m_ShowProductTime;
 
-		private void OnRenderingHud(object sender, EventArgs e)
+		private void SetupTime(ref double ms)
+		{
+			m_ShowProductTime = ms + Config.ShowIsHarvestableTime * 1000;
+			m_ShowProductTimeout = ms + Config.ShowIsHarvestableTime * 2000;
+		}
+
+		private void OnRenderedWorld(object sender, EventArgs e)
 		{
 			if (!Context.IsWorldReady)
 				return;
 
 			GameLocation currentLocation = Game1.currentLocation;
 			List<FarmAnimal> animals = GetAnimals(currentLocation);
+
+			double ms = Game1.currentGameTime.TotalGameTime.TotalMilliseconds;
+			float yOffsetFactor = 4f * (float)Math.Round(Math.Sin(ms / 250.0), 2);
+
 			if (animals != null)
 			{
-				foreach (FarmAnimal farmAnimal in animals)
+				bool showProduct = false;
+				if (Config.ShowIsHarvestable)
 				{
-					if (!farmAnimal.wasPet)
+					if (m_ShowProductTime == default)
 					{
-						DrawEntity(farmAnimal, farmAnimal.home);
+						SetupTime(ref ms);
+					}
+
+					showProduct = ms <= m_ShowProductTime;
+				}
+
+				foreach (FarmAnimal animal in animals)
+				{
+					if (Config.ShowIsHarvestable)
+					{
+						if (showProduct && animal.currentProduce > 0 && animal.age >= animal.ageWhenMature)
+						{
+							switch (animal.currentProduce)
+							{
+								case 184://Milk Cow ID
+								case 186://Milk Cow ID
+									DrawEntity(Game1.objectSpriteSheet, Entities.CowMilk, animal, animal.home, ref yOffsetFactor);
+									break;
+
+								case 436://Milk Goat ID
+								case 438://Milk Goat ID
+									DrawEntity(Game1.objectSpriteSheet, Entities.GoatMilk, animal, animal.home, ref yOffsetFactor);
+									break;
+
+								case 440://Wool ID
+									DrawEntity(Game1.objectSpriteSheet, Entities.Wool, animal, animal.home, ref yOffsetFactor);
+									break;
+							}
+
+							continue;
+						}
+
+						if (ms >= m_ShowProductTimeout)
+						{
+							SetupTime(ref ms);
+						}
+					}
+
+					if (!animal.wasPet && !animal.wasAutoPet)
+					{
+						DrawEntity(Game1.mouseCursors, Entities.Heart, animal, animal.home, ref yOffsetFactor);
 					}
 				}
 			}
@@ -151,40 +211,39 @@ namespace AnimalObserver
 				Pet pet = GetPet(currentLocation);
 				if (pet != null && !pet.lastPetDay.Values.Any(x => x == Game1.Date.TotalDays))
 				{
-					DrawEntity(pet);
+					DrawEntity(Game1.mouseCursors, Entities.Heart, pet, null, ref yOffsetFactor);
 				}
 			}
+
+
+
 		}
 
 
-		private void DrawEntity(Character animal, Building home = null)
+
+		private void DrawEntity(Texture2D spriteSheet, EntitiesConfig config, Character character, Building building, ref float yOffsetFactor)
 		{
-			float factor = 4f * (float)Math.Round(Math.Sin(Game1.currentGameTime.TotalGameTime.TotalMilliseconds / 250.0), 2);
+			Vector2 offset = GetOffsetForAnimal(building);
+			offset += character.position;
 
-			Vector2 offsetForAnimal = GetOffsetForAnimal(home);
+			offset += new Vector2(character.Sprite.getWidth() / 2, yOffsetFactor);
 
-			DrawEntity(Config.Bubble, animal, factor, offsetForAnimal);
-			DrawEntity(Config.Heart, animal, factor, offsetForAnimal);
-		}
+			DrawEntity(Game1.mouseCursors, Entities.Bubble, ref offset);
 
-		private void DrawEntity(EntitiesConfig config, Character animal, float factor, Vector2 offset)
-		{
-			offset += animal.position;
 			offset += config.Offset;
-			offset += new Vector2(animal.Sprite.getWidth() / 2, factor);
 
-			DrawSprite(config, Game1.GlobalToLocal(Game1.uiViewport, offset));
+			DrawEntity(spriteSheet, config, ref offset);
 		}
 
-		private void DrawSprite(EntitiesConfig config, Vector2 position)
-        {
+		private void DrawEntity(Texture2D spriteSheet, EntitiesConfig config, ref Vector2 offset)
+		{
 			Game1.spriteBatch.Draw(
-				Game1.mouseCursors,
-				position,
+				spriteSheet,
+				Game1.GlobalToLocal(Game1.uiViewport, offset),
 				new Rectangle(config.X, config.Y, config.Width, config.Height),
 				config.Color,
 				config.Rotation,
-				config.Origin,
+				config.Origin, 
 				config.Scale,
 				config.SpriteEffects,
 				0f);

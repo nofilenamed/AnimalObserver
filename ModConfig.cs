@@ -8,11 +8,22 @@ namespace AnimalObserver
     {
         public bool PetToo { get; set; } = true;
 
-        public KeySetting Keys { get; set; } = new KeySetting();
+        public bool ShowIsHarvestable { get; set; } = true;
 
+        public byte ShowIsHarvestableTime { get; set; } = 5;
+
+        public KeySetting Keys { get; set; } = new KeySetting();      
+
+        public EntitiesSetting Entities { get; set; } = new EntitiesSetting();
+
+        public OffsetSetting Offsets { get; set; } = new OffsetSetting();        
+    }
+
+    internal class EntitiesSetting
+    {
         public EntitiesConfig Bubble { get; set; } = new EntitiesConfig()
         {
-            X = 141, 
+            X = 141,
             Y = 465,
             Width = 20,
             Height = 24,
@@ -26,14 +37,42 @@ namespace AnimalObserver
             Y = 514,
             Width = 9,
             Height = 10,
-            Offset = new Vector2(7f, 7f),
             Scale = 3f,
+            Offset = new Vector2(7f, 7f)
         };
 
-        public Offset Offsets { get; set; } = new Offset();        
+        public EntitiesConfig CowMilk { get; set; } = new EntitiesConfig()
+        {
+            X = 256,
+            Y = 112,
+            Width = 16,
+            Height = 16,
+            Scale = 2f,
+            Offset = new Vector2(4f, 4f)
+        };
+
+        public EntitiesConfig GoatMilk { get; set; } = new EntitiesConfig()
+        {
+            X = 64,
+            Y = 288,
+            Width = 16,
+            Height = 16,
+            Scale = 2f,
+            Offset = new Vector2(4f, 4f)
+        };
+
+        public EntitiesConfig Wool { get; set; } = new EntitiesConfig()
+        {
+            X = 128,
+            Y = 288,
+            Width = 16,
+            Height = 16,
+            Scale = 2f,
+            Offset = new Vector2(4f, 4f)
+        };
     }
 
-    internal class Offset
+    internal class OffsetSetting
     {
         public Vector2 BarnAnimal { get; set; } = new Vector2(32f, -64f);
 
