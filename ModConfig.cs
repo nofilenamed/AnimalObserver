@@ -10,7 +10,12 @@ namespace AnimalObserver
 
         public bool ShowIsHarvestable { get; set; } = true;
 
+        public bool ShowTruffle { get; set; } = true;
+
         public byte ShowIsHarvestableTime { get; set; } = 5;
+
+
+        
 
         public KeySetting Keys { get; set; } = new KeySetting();      
 
@@ -55,6 +60,16 @@ namespace AnimalObserver
         {
             X = 64,
             Y = 288,
+            Width = 16,
+            Height = 16,
+            Scale = 2f,
+            Offset = new Vector2(4f, 4f)
+        };
+
+        public EntitiesConfig Truffle { get; set; } = new EntitiesConfig()
+        {
+            X = 352,
+            Y = 272,
             Width = 16,
             Height = 16,
             Scale = 2f,

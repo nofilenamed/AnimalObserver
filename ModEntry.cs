@@ -185,6 +185,15 @@ namespace AnimalObserver
 									DrawEntity(Game1.objectSpriteSheet, Entities.GoatMilk, animal, animal.home, ref yOffsetFactor);
 									break;
 
+								case 430: //Truffle ID
+									if (Config.ShowTruffle)
+									{
+										DrawEntity(Game1.objectSpriteSheet, Entities.Truffle, animal, animal.home, ref yOffsetFactor);
+									}
+									break;
+
+
+
 								case 440://Wool ID
 									DrawEntity(Game1.objectSpriteSheet, Entities.Wool, animal, animal.home, ref yOffsetFactor);
 									break;
