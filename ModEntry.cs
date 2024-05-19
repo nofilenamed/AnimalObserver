@@ -13,7 +13,6 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Characters;
-using StardewValley.GameData.Buildings;
 using StardewValley.Network;
 
 namespace AnimalObserver
@@ -56,7 +55,7 @@ namespace AnimalObserver
             }
         }
 
-        private static List<FarmAnimal> GetAnimals(object currentLocation)
+        private static List<FarmAnimal> GetAnimals(GameLocation currentLocation)
         {
             List<FarmAnimal> list = null;
             if (currentLocation is Farm farm)
@@ -106,10 +105,12 @@ namespace AnimalObserver
         }
 
 
-        public Vector2 GetOffsetForAnimal(BuildingData data)
+        public Vector2 GetOffsetForAnimal(Building building)
         {
-            if (data == null)
+            if (building == null)
                 return Config.Offsets.Pet;
+
+            var data = building.GetData();
 
             if (data.ValidOccupantTypes[0] == "Coop")
             {
@@ -158,6 +159,7 @@ namespace AnimalObserver
             double ms = Game1.currentGameTime.TotalGameTime.TotalMilliseconds;
             float yOffsetFactor = 4f * (float)Math.Round(Math.Sin(ms / 250.0), 2);
 
+
             if (animals != null)
             {
                 bool showProduct = false;
@@ -177,23 +179,24 @@ namespace AnimalObserver
                     {
                         if (showProduct && !string.IsNullOrEmpty(animal.currentProduce.Value) && animal.isAdult())
                         {
+                            //Monitor.LogOnce($"{animal.displayName} {animal.currentProduce.Value}", LogLevel.Debug);
                             switch (animal.currentProduce.Value)
                             {
-                                case "(O)184"://Milk Cow ID
-                                case "(O)186"://Milk Cow ID
+                                case "184"://Milk Cow ID
+                                case "186"://Milk Cow ID
                                 {
                                     DrawEntity(Game1.objectSpriteSheet, Entities.CowMilk, animal, animal.home, ref yOffsetFactor);
                                     break;
                                 }
 
-                                case "(O)436"://Milk Goat ID
-                                case "(O)438"://Milk Goat ID
+                                case "436"://Milk Goat ID
+                                case "438"://Milk Goat ID
                                 {
                                     DrawEntity(Game1.objectSpriteSheet, Entities.GoatMilk, animal, animal.home, ref yOffsetFactor);
                                     break;
                                 }
 
-                                case "(O)430": //Truffle ID
+                                case "430": //Truffle ID
                                 {
                                     if (Config.ShowTruffle)
                                     {
@@ -202,7 +205,7 @@ namespace AnimalObserver
                                     break;
                                 }
 
-                                case "(O)440"://Wool ID
+                                case "440"://Wool ID
                                 {
                                     DrawEntity(Game1.objectSpriteSheet, Entities.Wool, animal, animal.home, ref yOffsetFactor);
                                     break;
@@ -237,7 +240,7 @@ namespace AnimalObserver
 
         private void DrawEntity(Texture2D spriteSheet, EntitiesConfig config, Character character, Building building, ref float yOffsetFactor)
         {
-            Vector2 offset = GetOffsetForAnimal(building.GetData());
+            Vector2 offset = GetOffsetForAnimal(building);
             offset += character.position.Value;
 
             offset += new Vector2(character.Sprite.getWidth() / 2, yOffsetFactor);
